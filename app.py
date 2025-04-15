@@ -12,6 +12,14 @@ def load_data():
 
 df = load_data()
 
+# ------------------ Load Historical Tariff Data ------------------
+tariff_data_path = "Tariff Rate by Year (1).csv"
+@st.cache_data
+def load_tariff_data():
+    return pd.read_csv(tariff_data_path)
+
+historical_df = load_tariff_data()
+
 # ------------------ Landing Section ------------------
 st.title("📊 Tariff Impact & Supply Chain Simulator")
 st.markdown("""
@@ -24,17 +32,19 @@ Welcome to the simulation dashboard. Here you can:
 
 # ------------------ Historical Tariff View ------------------
 st.subheader("📈 Historical Tariff Education")
-historical_tariffs = {
-    "China": np.linspace(0.1, 0.25, 10),
-    "Mexico": np.linspace(0.05, 0.1, 10),
-    "Vietnam": np.linspace(0.03, 0.08, 10)
-}
-years = list(range(2015, 2025))
-fig = go.Figure()
-for country, values in historical_tariffs.items():
-    fig.add_trace(go.Scatter(x=years, y=values, mode='lines', name=country))
-fig.update_layout(title="Tariff Trend by Country (2015–2024)", yaxis_tickformat=".0%")
-st.plotly_chart(fig, use_container_width=True)
+years = sorted(historical_df["Year"].unique())
+selected_year = st.slider("Select Year", min_value=years[0], max_value=years[-1], value=years[-1])
+
+year_df = historical_df[historical_df["Year"] == selected_year]
+fig_heat = px.density_heatmap(
+    year_df,
+    x="Country",
+    y="Material",
+    z="Tariff Rate (%)",
+    color_continuous_scale="Reds",
+    title=f"Tariff Heatmap by Country & Material in {selected_year}"
+)
+st.plotly_chart(fig_heat, use_container_width=True)
 
 # ------------------ Input & Baseline ------------------
 st.subheader("📦 Baseline Supply Chain Inputs")
