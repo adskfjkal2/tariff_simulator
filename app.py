@@ -68,7 +68,28 @@ st.subheader("🔁 Tariff Scenario Simulation")
 
 historical_df = pd.DataFrame({country: get_historical_tariffs(country) for country in selected_countries})
 st.subheader("📈 Historical Tariff Trends")
-st.line_chart(historical_df)
+ st.line_chart(historical_df)
+
+# improved formatting
+import plotly.graph_objects as go
+fig = go.Figure()
+for country in selected_countries:
+    fig.add_trace(go.Scatter(
+        x=historical_df.index,
+        y=historical_df[country],
+        mode='lines',
+        name=country
+    ))
+fig.update_layout(
+    title="📈 Historical Tariff Trends (2000–2024)",
+    xaxis_title="Year",
+    yaxis_title="Tariff Rate (%)",
+    yaxis_tickformat=".0%",  # Converts 0.2 → 20%
+    template="simple_white"
+)
+st.plotly_chart(fig, use_container_width=True)
+
+
 
 all_results = []
 for country in selected_countries:
@@ -76,8 +97,9 @@ for country in selected_countries:
     result = simulate_costs(country, base_tariff, adu, plt, cover_days, ots, ppm, volatility, runs)
     all_results.append(result)
 
+
 #heat map
-import plotly.graph_objects as go
+# import plotly.graph_objects as go
 
 # Country coordinates (minimal set)
 country_coords = {
