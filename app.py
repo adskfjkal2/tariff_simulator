@@ -68,7 +68,7 @@ st.subheader("🔁 Tariff Scenario Simulation")
 
 historical_df = pd.DataFrame({country: get_historical_tariffs(country) for country in selected_countries})
 st.subheader("📈 Historical Tariff Trends")
- st.line_chart(historical_df)
+st.line_chart(historical_df)
 
 # improved formatting
 import plotly.graph_objects as go
