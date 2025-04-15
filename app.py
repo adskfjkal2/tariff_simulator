@@ -76,6 +76,46 @@ for country in selected_countries:
     result = simulate_costs(country, base_tariff, adu, plt, cover_days, ots, ppm, volatility, runs)
     all_results.append(result)
 
+#heat map
+import plotly.graph_objects as go
+
+# Country coordinates (minimal set)
+country_coords = {
+    "China": {"lat": 35.8617, "lon": 104.1954},
+    "Vietnam": {"lat": 14.0583, "lon": 108.2772},
+    "Mexico": {"lat": 23.6345, "lon": -102.5528},
+    "USA": {"lat": 37.0902, "lon": -95.7129},
+    "Germany": {"lat": 51.1657, "lon": 10.4515},
+    "Taiwan": {"lat": 23.6978, "lon": 120.9605},
+    "EU": {"lat": 50.1109, "lon": 8.6821}  # Frankfurt placeholder
+}
+
+# ------------------ World Map: Sourcing Points ------------------
+st.subheader("🗺️ Sourcing Map: Tariff by Country")
+
+map_data = pd.DataFrame([
+    {
+        "Country": country,
+        "Tariff": product_tariffs[selected_material][country],
+        "lat": country_coords[country]["lat"],
+        "lon": country_coords[country]["lon"]
+    }
+    for country in selected_countries
+])
+
+fig_map = px.scatter_geo(
+    map_data,
+    lat="lat",
+    lon="lon",
+    text="Country",
+    color="Tariff",
+    size="Tariff",
+    projection="natural earth",
+    color_continuous_scale="Reds",
+    title="Tariff Levels by Sourcing Country"
+)
+st.plotly_chart(fig_map, use_container_width=True)
+
 final_df = pd.concat(all_results)
 
 # ------------------ Results: Violin + Cost Breakdown ------------------
@@ -93,3 +133,18 @@ st.dataframe(summary)
 
 # ------------------ (Planned): Save Scenario / Compare Button ------------------
 # You can add st.session_state + st.button() to save "snapshots" for compare view
+
+
+# ------------------ Heatmap: P95 Risk Exposure ------------------
+st.subheader("🔥 Risk Exposure Heatmap (P95 Total CTS)")
+
+heat_data = summary.reset_index()
+fig_heat = px.density_heatmap(
+    heat_data,
+    x="Country",
+    y=["P95"],
+    z="P95",
+    color_continuous_scale="Reds",
+    title="P95 Cost to Serve by Country"
+)
+st.plotly_chart(fig_heat, use_container_width=True)
