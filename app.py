@@ -319,40 +319,28 @@ else:
 
 
 # ----------- 2x2 Grid Layout -----------
+# Layout always rendered
 col1, col2 = st.columns(2)
-
-# Top Left: Input Data Table
-with col1:
-    st.subheader("📦 Baseline Supply Chain Inputs")
-    st.dataframe(df, use_container_width=True)
-
-# Top Right: Bubble Chart
-with col2:
-    st.subheader("📍 Cost Impact Bubble Chart: Baseline + Scenario")
-
-    # (Recalculate scenario_triggered here if needed)
-    scenario_triggered = (
-        "Scenario CTS" in df_scenario.columns
-        and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
-    )
-
-    # (Keep your fig_both definition here, unchanged...)
-    st.plotly_chart(fig_both, use_container_width=True)
-
-    if not scenario_triggered:
-        st.caption("👀 Run a scenario to compare with baseline.")
-    else:
-        st.caption("🔵 Bubbles = Baseline & Scenario. Dotted line = Avg Δ by country.")
-
-# Bottom: Another row of columns
 col3, col4 = st.columns(2)
 
-# Bottom Left: Bar Chart
-with col3:
-    st.subheader("🔁 Scenario Comparison Bar Chart")
-    st.plotly_chart(fig_bar, use_container_width=True)
+with col1:
+    st.subheader("📦 Baseline Supply Chain Inputs")
+    st.dataframe(df, use_container_width=True, height=400)
 
-# Bottom Right: Empty for now
+with col2:
+    st.subheader("📍 Bubble Chart: Baseline + Scenario")
+    if scenario_triggered and 'fig_both' in locals():
+        st.plotly_chart(fig_both, use_container_width=True, height=400)
+    else:
+        st.info("Run a scenario to see the bubble chart.")
+
+with col3:
+    st.subheader("🔁 Scenario Bar Chart")
+    if scenario_triggered and 'fig_bar' in locals():
+        st.plotly_chart(fig_bar, use_container_width=True, height=400)
+    else:
+        st.info("Bar chart will appear after simulation is run.")
+
 with col4:
     st.subheader("🧭 Placeholder")
-    st.markdown("This space is reserved for future components.")
+    st.markdown("Reserved for future modules or outputs.")
