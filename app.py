@@ -86,3 +86,34 @@ if st.sidebar.button("Run Scenario Simulation"):
                      x="Part Number", y="Delta ($)", color="Source Country",
                      title="Parts with Highest Cost Impact")
     st.plotly_chart(fig_bar, use_container_width=True)
+
+### Bubble chart for delta
+
+    # ------------------ New Delta Bubble Chart ------------------
+    st.subheader("📉 Bubble Plot: Cost Change by Part")
+
+    bubble_df = compare_df.copy()
+    bubble_df["Bubble Size"] = df_scenario["Total Inventory Position"]
+    bubble_df["Delta Label"] = bubble_df["Delta ($)"].apply(lambda x: f"${x:,.0f}")
+
+    fig_bubble = px.scatter(
+        bubble_df,
+        x="Delta ($)",
+        y="Source Country",  # Or use "Description" for part name
+        size="Bubble Size",
+        color="Source Country",
+        hover_name="Part Number",
+        hover_data={
+            "Delta ($)": True,
+            "New CTS": True,
+            "Total Cost to Serve": True,
+            "Bubble Size": False
+        },
+        title="💥 Cost Impact vs Baseline by Sourcing Country",
+        height=600
+    )
+
+    fig_bubble.update_traces(marker=dict(opacity=0.7, line=dict(width=1, color='DarkSlateGrey')))
+    fig_bubble.update_layout(xaxis_title="Cost Delta vs Baseline ($)", yaxis_title="Source Country")
+
+    st.plotly_chart(fig_bubble, use_container_width=True)
