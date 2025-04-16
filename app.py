@@ -361,11 +361,11 @@ bottom_row = st.container()
 
 # ---------------- TOP ROW ----------------
 with top_row:
-    col1, col2 = st.rows(2)
+    col1, col2 = st.columns(2)
 
     with col1:
         st.subheader("📍 Bubble Chart: Baseline + Scenario")
-        st.plotly_chart(fig_both, use_container_width=True, height=400)
+        st.plotly_chart(fig_both, use_container_width=True)
 
     with col2:
         
