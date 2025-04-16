@@ -154,51 +154,86 @@ if st.sidebar.button("Run Scenario Simulation"):
                      title="Parts with Highest Cost Impact")
     st.plotly_chart(fig_bar, use_container_width=True)
 
-    # ------------------ Updated Delta Bubble Chart ------------------
-    st.subheader("📍 Scenario Delta Plot: Updated After Simulation")
+    # ------------------ Combined Bubble Chart: Baseline + Scenario ------------------
+    st.subheader("📍 Combined Delta Plot: Baseline vs Simulation")
 
+    # Compute delta and scenario metrics
     bubble_df = df_scenario.copy()
     bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
     bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
     bubble_df["Part Number"] = df["Part Number"]
 
-    # Compute size dynamically again based on selection
+    # Prepare baseline and scenario size columns based on toggle
     if size_option == "Total Inventory":
-        bubble_df["Bubble Size"] = df["Total Inventory Position"]
+        baseline_size = df["Total Inventory Position"]
+        scenario_size = df["Total Inventory Position"]
     elif size_option == "Δ Cost ($)":
-        bubble_df["Bubble Size"] = bubble_df["Delta ($)"].abs()
+        baseline_size = pd.Series([1]*len(df))  # Ensure baseline bubbles are still visible
+        scenario_size = bubble_df["Delta ($)"].abs()
     elif size_option == "Δ Cost (%)":
-        bubble_df["Bubble Size"] = bubble_df["Delta (%)"].abs() * 100  # percent scaled
+        baseline_size = pd.Series([1]*len(df))  # Ensure baseline bubbles are still visible
+        scenario_size = bubble_df["Delta (%)"].abs() * 100  # scale for visibility
 
-    sizeref = 2. * bubble_df["Bubble Size"].max() / (40.0 ** 2)
+    # Combine for sizing logic
+    combined_size = pd.concat([baseline_size, scenario_size])
+    sizeref = 2. * combined_size.max() / (40.0 ** 2)
 
-    fig_bubble = go.Figure()
-    fig_bubble.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
+    fig_both = go.Figure()
+    fig_both.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
 
-    for country in bubble_df["Source Country"].unique():
-        group = bubble_df[bubble_df["Source Country"] == country]
-        fig_bubble.add_trace(go.Scatter(
-            x=group["Delta ($)"],
-            y=group["Part Number"],
+    # Add both baseline and scenario traces per country
+    for country in df["Source Country"].unique():
+        # Baseline trace (always Δ = 0)
+        baseline_group = df[df["Source Country"] == country].copy()
+        baseline_group["Delta ($)"] = 0
+        baseline_group["Part Number"] = df["Part Number"]
+        baseline_group["Bubble Size"] = baseline_size[baseline_group.index]
+
+        fig_both.add_trace(go.Scatter(
+            x=baseline_group["Delta ($)"],
+            y=baseline_group["Part Number"],
             mode="markers",
-            name=country,
+            name=f"{country} (Baseline)",
             marker=dict(
-                size=group["Bubble Size"],
+                size=baseline_group["Bubble Size"],
                 sizemode="area",
                 sizeref=sizeref,
                 sizemin=5,
-                opacity=0.7,
+                opacity=0.4,
+                symbol="circle",
+                line=dict(width=1, color='black')
+            ),
+            hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
+        ))
+
+        # Scenario trace (computed delta)
+        scenario_group = bubble_df[bubble_df["Source Country"] == country].copy()
+        scenario_group["Bubble Size"] = scenario_size[scenario_group.index]
+
+        fig_both.add_trace(go.Scatter(
+            x=scenario_group["Delta ($)"],
+            y=scenario_group["Part Number"],
+            mode="markers",
+            name=f"{country} (Scenario)",
+            marker=dict(
+                size=scenario_group["Bubble Size"],
+                sizemode="area",
+                sizeref=sizeref,
+                sizemin=5,
+                opacity=0.9,
+                symbol="diamond",
                 line=dict(width=1, color="black")
             ),
             hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
         ))
 
-    fig_bubble.update_layout(
-        title=f"💥 Simulation Impact: Cost Change from Baseline (Bubble Size: {size_option})",
+    fig_both.update_layout(
+        title=f"💥 Combined View: Cost Change from Baseline (Bubble Size: {size_option})",
         xaxis_title="Δ Cost-to-Serve ($)",
         yaxis_title="Part Number",
-        height=600,
+        height=650,
         showlegend=True
     )
 
-    st.plotly_chart(fig_bubble, use_container_width=True)
+    st.plotly_chart(fig_both, use_container_width=True)
+    st.caption("🔵 Circles = Baseline | 🔷 Diamonds = Scenario")
