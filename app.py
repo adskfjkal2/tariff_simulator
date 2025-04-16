@@ -12,6 +12,11 @@ def load_data():
 
 df = load_data()
 
+# Ensure df_scenario exists so chart can always be drawn
+df_scenario = df.copy()
+df_scenario["Scenario CTS"] = df["Total Cost to Serve"]  # Same as baseline initially
+
+
 # ------------------ Load Historical Tariff Data ------------------
 tariff_data_path = "Tariff Rate by Year (1).csv"
 @st.cache_data
