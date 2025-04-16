@@ -69,15 +69,48 @@ baseline_only_df["Bubble Size"] = df["Total Inventory Position"]
 baseline_only_df["Source Country"] = df["Source Country"]
 baseline_only_df["Part Number"] = df["Part Number"]
 
-fig_zero = px.scatter(
-    baseline_only_df,
-    x="Delta ($)",
-    y="Part Number",
-    size="Bubble Size",
-    color="Source Country",
-    title="💥 Baseline: All Parts at Zero Delta (No Scenario Yet)",
-    height=600
+sizeref = 2. * max(df["Total Inventory Position"]) / (40.0 ** 2)
+
+fig_zero = go.Figure()
+fig_zero.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
+
+for country in baseline_only_df["Source Country"].unique():
+    group = baseline_only_df[baseline_only_df["Source Country"] == country]
+    fig_zero.add_trace(go.Scatter(
+        x=group["Delta ($)"],
+        y=group["Part Number"],
+        mode="markers",
+        name=country,
+        marker=dict(
+            size=group["Bubble Size"],
+            sizemode="area",
+            sizeref=sizeref,
+            sizemin=5,
+            opacity=0.7,
+            line=dict(width=1, color='black')
+        ),
+        hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
+    ))
+
+fig_zero.update_layout(
+    title="💥 Baseline: All Parts at Zero Delta",
+    xaxis_title="Δ Cost vs Baseline ($)",
+    yaxis_title="Part Number",
+    height=600,
+    showlegend=True
 )
+st.plotly_chart(fig_zero, use_container_width=True)
+
+
+# fig_zero = px.scatter(
+#     baseline_only_df,
+#     x="Delta ($)",
+#     y="Part Number",
+#     size="Bubble Size",
+#     color="Source Country",
+#     title="💥 Baseline: All Parts at Zero Delta (No Scenario Yet)",
+#     height=600
+#)
 
 fig_zero.update_layout(xaxis_title="Δ Cost vs Baseline ($)", yaxis_title="Part Number", showlegend=True)
 fig_zero.update_traces(marker=dict(opacity=0.7, line=dict(width=1, color='DarkSlateGrey')))
@@ -132,12 +165,15 @@ if st.sidebar.button("Run Scenario Simulation"):
             name=country,
             marker=dict(
                 size=group["Bubble Size"],
+                sizemode="area",
+                sizeref=sizeref,
+                sizemin=5,
                 opacity=0.7,
                 line=dict(width=1, color="black")
             ),
             hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
         ))
-
+        
     fig_bubble.update_layout(
         title="💥 Simulation Impact: Cost Change from Baseline",
         xaxis_title="Δ Cost-to-Serve ($)",
