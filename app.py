@@ -209,7 +209,7 @@ if st.sidebar.button("Run Scenario Simulation"):
 
 # Determine whether a real scenario has been run
 scenario_triggered = (
-    "Scenario CTS" in bubble_df.columns
+    "Scenario CTS" in df_scenario.columns
     and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"]))
 
 
