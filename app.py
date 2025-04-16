@@ -347,96 +347,96 @@ else:
 #     st.markdown("Reserved for future modules or outputs.")
 
 
-# === Container-based Fixed Dashboard ===
+#=== Container-based Fixed Dashboard ===
 
-# # Simulation status
-# scenario_triggered = (
-#     "Scenario CTS" in df_scenario.columns
-#     and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
-# )
+# Simulation status
+scenario_triggered = (
+    "Scenario CTS" in df_scenario.columns
+    and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
+)
 
-# # Create the 2x2 grid containers
-# top_row = st.container()
-# bottom_row = st.container()
+# Create the 2x2 grid containers
+top_row = st.container()
+bottom_row = st.container()
 
-# # ---------------- TOP ROW ----------------
-# with top_row:
-#     col1, col2 = st.columns(2)
+# ---------------- TOP ROW ----------------
+with top_row:
+    col1, col2 = st.columns(2)
 
-#     with col1:
-#         st.subheader("📦 Baseline Supply Chain Inputs")
-#         st.dataframe(df, use_container_width=True, height=400)
+    with col1:
+        st.subheader("📦 Baseline Supply Chain Inputs")
+        st.dataframe(df, use_container_width=True, height=400)
 
-#     with col2:
-#         st.subheader("📍 Bubble Chart: Baseline + Scenario")
-#         st.plotly_chart(fig_both, use_container_width=True, height=400)
+    with col2:
+        st.subheader("📍 Bubble Chart: Baseline + Scenario")
+        st.plotly_chart(fig_both, use_container_width=True, height=400)
 
-# # ---------------- BOTTOM ROW ----------------
-# with bottom_row:
-#     col3, col4 = st.columns(2)
+# ---------------- BOTTOM ROW ----------------
+with bottom_row:
+    col3, col4 = st.columns(2)
 
-#     with col3:
-#         st.subheader("🔁 Scenario Comparison Bar Chart")
-#         if scenario_triggered and 'fig_bar' in locals():
-#             st.plotly_chart(fig_bar, use_container_width=True, height=400)
-#         else:
-#             st.info("Run a scenario to view comparison bar chart.")
+    with col3:
+        st.subheader("🔁 Scenario Comparison Bar Chart")
+        if scenario_triggered and 'fig_bar' in locals():
+            st.plotly_chart(fig_bar, use_container_width=True, height=400)
+        else:
+            st.info("Run a scenario to view comparison bar chart.")
 
-#     with col4:
-#         st.subheader("🧭 Placeholder")
-#         st.markdown("Reserved for future modules or simulation results.")
+    with col4:
+        st.subheader("🧭 Placeholder")
+        st.markdown("Reserved for future modules or simulation results.")
 
 # ----- Single Canvas
 # === Matplotlib Dashboard ===
-import matplotlib.pyplot as plt
-import seaborn as sns
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 
-# Build scenario delta comparison
-compare_df = df_scenario[["Part Number", "Source Country"]].copy()
-compare_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
-compare_df["Delta (%)"] = (compare_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
-compare_df["Inventory"] = df["Total Inventory Position"]
+# # Build scenario delta comparison
+# compare_df = df_scenario[["Part Number", "Source Country"]].copy()
+# compare_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
+# compare_df["Delta (%)"] = (compare_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+# compare_df["Inventory"] = df["Total Inventory Position"]
 
-# Create tariff heatmap pivot table
-tariff_pivot = historical_df.pivot_table(
-    index="Material",
-    columns="Country",
-    values="Tariff Rate (%)",
-    aggfunc="mean"  # or "max" or "min" if needed
-)
-# Create dashboard figure
-fig, axs = plt.subplots(2, 2, figsize=(14, 10))
-fig.tight_layout(pad=4.0)
+# # Create tariff heatmap pivot table
+# tariff_pivot = historical_df.pivot_table(
+#     index="Material",
+#     columns="Country",
+#     values="Tariff Rate (%)",
+#     aggfunc="mean"  # or "max" or "min" if needed
+# )
+# # Create dashboard figure
+# fig, axs = plt.subplots(2, 2, figsize=(14, 10))
+# fig.tight_layout(pad=4.0)
 
-# 📍 Bubble chart
-axs[0, 0].scatter(compare_df["Delta ($)"], compare_df["Part Number"],
-                  s=compare_df["Inventory"] / 10, alpha=0.5,
-                  c='skyblue', edgecolors='black')
-axs[0, 0].axvline(0, color='gray', linestyle='--')
-axs[0, 0].set_title("Δ Cost-to-Serve Bubble Chart")
-axs[0, 0].set_xlabel("Δ Cost ($)")
-axs[0, 0].set_ylabel("Part Number")
+# # 📍 Bubble chart
+# axs[0, 0].scatter(compare_df["Delta ($)"], compare_df["Part Number"],
+#                   s=compare_df["Inventory"] / 10, alpha=0.5,
+#                   c='skyblue', edgecolors='black')
+# axs[0, 0].axvline(0, color='gray', linestyle='--')
+# axs[0, 0].set_title("Δ Cost-to-Serve Bubble Chart")
+# axs[0, 0].set_xlabel("Δ Cost ($)")
+# axs[0, 0].set_ylabel("Part Number")
 
-# 🔥 Tariff heatmap
-sns.heatmap(tariff_pivot, cmap="Reds", ax=axs[0, 1])
-axs[0, 1].set_title("Tariff Rate Heatmap")
-axs[0, 1].set_xlabel("Country")
-axs[0, 1].set_ylabel("Material")
+# # 🔥 Tariff heatmap
+# sns.heatmap(tariff_pivot, cmap="Reds", ax=axs[0, 1])
+# axs[0, 1].set_title("Tariff Rate Heatmap")
+# axs[0, 1].set_xlabel("Country")
+# axs[0, 1].set_ylabel("Material")
 
-# 🔁 Bar chart
-sorted_df = compare_df.sort_values("Delta ($)", ascending=False)
-axs[1, 0].bar(sorted_df["Part Number"], sorted_df["Delta ($)"], color='coral')
-axs[1, 0].set_title("Scenario Δ Cost by Part")
-axs[1, 0].set_xlabel("Part Number")
-axs[1, 0].set_ylabel("Δ Cost ($)")
-axs[1, 0].tick_params(axis='x', labelrotation=90)
+# # 🔁 Bar chart
+# sorted_df = compare_df.sort_values("Delta ($)", ascending=False)
+# axs[1, 0].bar(sorted_df["Part Number"], sorted_df["Delta ($)"], color='coral')
+# axs[1, 0].set_title("Scenario Δ Cost by Part")
+# axs[1, 0].set_xlabel("Part Number")
+# axs[1, 0].set_ylabel("Δ Cost ($)")
+# axs[1, 0].tick_params(axis='x', labelrotation=90)
 
-# 🧭 Placeholder
-axs[1, 1].axis("off")
-axs[1, 1].text(0.5, 0.5, "Reserved for future output", ha="center", va="center", fontsize=12, alpha=0.6)
+# # 🧭 Placeholder
+# axs[1, 1].axis("off")
+# axs[1, 1].text(0.5, 0.5, "Reserved for future output", ha="center", va="center", fontsize=12, alpha=0.6)
 
-fig.suptitle("📊 Supply Chain Simulation Dashboard (All-In-One)", fontsize=16)
-fig.subplots_adjust(top=0.92)
+# fig.suptitle("📊 Supply Chain Simulation Dashboard (All-In-One)", fontsize=16)
+# fig.subplots_adjust(top=0.92)
 
-# Display in Streamlit
-st.pyplot(fig)
+# # Display in Streamlit
+# st.pyplot(fig)
