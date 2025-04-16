@@ -307,12 +307,12 @@ fig_both.update_layout(
     title=f"💥 Baseline vs Scenario (Bubble Size: {size_option})",
     xaxis_title="Δ Cost-to-Serve ($)",
     yaxis_title="Part Number",
-    height=700,
+    height=500,
     showlegend=True,
     transition={"duration": 500}  # subtle animation
 )
 
-st.plotly_chart(fig_both, use_container_width=True, height=300)
+st.plotly_chart(fig_both, use_container_width=True)
 
 if not scenario_triggered:
     st.caption("👀 Run a scenario to compare with baseline.")
