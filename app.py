@@ -321,27 +321,67 @@ else:
 
 
 
-# ----------- 2x2 Grid Layout -----------
-# Layout always rendered
-col1, col2 = st.columns(2)
-col3, col4 = st.columns(2)
+# # ----------- 2x2 Grid Layout -----------
+# # Layout always rendered
+# col1, col2 = st.columns(2)
+# col3, col4 = st.columns(2)
 
-with col1:
-    st.subheader("📦 Baseline Supply Chain Inputs")
-    st.dataframe(df, use_container_width=True, height=400)
+# with col1:
+#     st.subheader("📦 Baseline Supply Chain Inputs")
+#     st.dataframe(df, use_container_width=True, height=400)
 
-with col2:
-    st.subheader("📍 Bubble Chart: Baseline + Scenario")
-    st.plotly_chart(fig_both, use_container_width=True, height=400)
+# with col2:
+#     st.subheader("📍 Bubble Chart: Baseline + Scenario")
+#     st.plotly_chart(fig_both, use_container_width=True, height=400)
 
     
-with col3:
-    st.subheader("🔁 Scenario Bar Chart")
-    if scenario_triggered and 'fig_bar' in locals():
-        st.plotly_chart(fig_bar, use_container_width=True, height=400)
-    else:
-        st.info("Bar chart will appear after simulation is run.")
+# with col3:
+#     st.subheader("🔁 Scenario Bar Chart")
+#     if scenario_triggered and 'fig_bar' in locals():
+#         st.plotly_chart(fig_bar, use_container_width=True, height=400)
+#     else:
+#         st.info("Bar chart will appear after simulation is run.")
 
-with col4:
-    st.subheader("🧭 Placeholder")
-    st.markdown("Reserved for future modules or outputs.")
+# with col4:
+#     st.subheader("🧭 Placeholder")
+#     st.markdown("Reserved for future modules or outputs.")
+
+
+# === Container-based Fixed Dashboard ===
+
+# Simulation status
+scenario_triggered = (
+    "Scenario CTS" in df_scenario.columns
+    and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
+)
+
+# Create the 2x2 grid containers
+top_row = st.container()
+bottom_row = st.container()
+
+# ---------------- TOP ROW ----------------
+with top_row:
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("📦 Baseline Supply Chain Inputs")
+        st.dataframe(df, use_container_width=True, height=400)
+
+    with col2:
+        st.subheader("📍 Bubble Chart: Baseline + Scenario")
+        st.plotly_chart(fig_both, use_container_width=True, height=400)
+
+# ---------------- BOTTOM ROW ----------------
+with bottom_row:
+    col3, col4 = st.columns(2)
+
+    with col3:
+        st.subheader("🔁 Scenario Comparison Bar Chart")
+        if scenario_triggered and 'fig_bar' in locals():
+            st.plotly_chart(fig_bar, use_container_width=True, height=400)
+        else:
+            st.info("Run a scenario to view comparison bar chart.")
+
+    with col4:
+        st.subheader("🧭 Placeholder")
+        st.markdown("Reserved for future modules or simulation results.")
