@@ -74,11 +74,7 @@ size_option = st.sidebar.selectbox("Choose what bubble size represents:", [
     "Δ Cost (%)"
 ])
 
-# Determine whether a real scenario has been run
-scenario_triggered = (
-    "Scenario CTS" in df_scenario.columns
-    and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
-)
+
 
 # ------------------ Scenario Simulation ------------------
 if st.sidebar.button("Run Scenario Simulation"):
@@ -216,6 +212,11 @@ bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
 bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
 bubble_df["Part Number"] = df["Part Number"]
 
+# Determine whether a real scenario has been run
+scenario_triggered = (
+    "Scenario CTS" in df_scenario.columns
+    and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
+)
 # Set bubble sizes
 if size_option == "Total Inventory":
     baseline_size = df["Total Inventory Position"]
