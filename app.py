@@ -88,32 +88,39 @@ if st.sidebar.button("Run Scenario Simulation"):
     st.plotly_chart(fig_bar, use_container_width=True)
 
 ### Bubble chart for delta
+st.subheader("📍 Scenario Delta Plot: Baseline vs Simulation")
 
-    # ------------------ New Delta Bubble Chart ------------------
-    st.subheader("📉 Bubble Plot: Cost Change by Part")
+bubble_df = compare_df.copy()
+bubble_df["Bubble Size"] = df_scenario["Total Inventory Position"]
+bubble_df["Delta ($)"] = bubble_df["Delta ($)"].round(2)
 
-    bubble_df = compare_df.copy()
-    bubble_df["Bubble Size"] = df_scenario["Total Inventory Position"]
-    bubble_df["Delta Label"] = bubble_df["Delta ($)"].apply(lambda x: f"${x:,.0f}")
+# Plot scenario delta
+fig_bubble = go.Figure()
 
-    fig_bubble = px.scatter(
-        bubble_df,
-        x="Delta ($)",
-        y="Source Country",  # Or use "Description" for part name
-        size="Bubble Size",
-        color="Source Country",
-        hover_name="Part Number",
-        hover_data={
-            "Delta ($)": True,
-            "New CTS": True,
-            "Total Cost to Serve": True,
-            "Bubble Size": False
-        },
-        title="💥 Cost Impact vs Baseline by Sourcing Country",
-        height=600
-    )
+# Add baseline line (Delta = 0)
+fig_bubble.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
 
-    fig_bubble.update_traces(marker=dict(opacity=0.7, line=dict(width=1, color='DarkSlateGrey')))
-    fig_bubble.update_layout(xaxis_title="Cost Delta vs Baseline ($)", yaxis_title="Source Country")
+# Add each country group
+for country in bubble_df["Source Country"].unique():
+    group = bubble_df[bubble_df["Source Country"] == country]
+    fig_bubble.add_trace(go.Scatter(
+        x=group["Delta ($)"],
+        y=group["Part Number"],
+        mode="markers",
+        name=country,
+        marker=dict(
+            size=group["Bubble Size"] / 100,  # scale size for readability
+            opacity=0.7,
+            line=dict(width=1, color="black")
+        ),
+        hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
+    ))
 
-    st.plotly_chart(fig_bubble, use_container_width=True)
+fig_bubble.update_layout(
+    title="💥 Scenario Simulation: Cost Change from Baseline",
+    xaxis_title="Δ Cost-to-Serve ($)",
+    yaxis_title="Part Number",
+    height=600,
+    showlegend=True
+)
+st.plotly_chart(fig_bubble, use_container_width=True)
