@@ -40,15 +40,15 @@ st.title("📊 Tariff Impact & Supply Chain Simulator")
 # years = sorted(historical_df["Year"].unique())
 # selected_year = st.slider("Select Year", min_value=years[0], max_value=years[-1], value=years[-1])
 
-year_df = historical_df[historical_df["Year"] == selected_year]
-fig_heat = px.density_heatmap(
-    year_df,
-    x="Country",
-    y="Material",
-    z="Tariff Rate (%)",
-    color_continuous_scale="Reds",
-    title=f"Tariff Heatmap by Country & Material in {selected_year}"
-)
+# year_df = historical_df[historical_df["Year"] == selected_year]
+# fig_heat = px.density_heatmap(
+#     year_df,
+#     x="Country",
+#     y="Material",
+#     z="Tariff Rate (%)",
+#     color_continuous_scale="Reds",
+#     title=f"Tariff Heatmap by Country & Material in {selected_year}"
+# )
 # st.plotly_chart(fig_heat, use_container_width=True)
 
 # ------------------ Input & Baseline ------------------
