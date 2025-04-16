@@ -27,18 +27,18 @@ historical_df = load_tariff_data()
 
 # ------------------ Landing Section ------------------
 st.title("📊 Tariff Impact & Supply Chain Simulator")
-st.markdown("""
-Welcome to the simulation dashboard. Here you can:
-- Explore historical tariffs
-- View part-level baseline data
-- Model what-if scenarios (e.g. tariff changes, supplier switches)
-- Compare baseline vs scenario cost exposure
-""")
+# st.markdown("""
+# Welcome to the simulation dashboard. Here you can:
+# - Explore historical tariffs
+# - View part-level baseline data
+# - Model what-if scenarios (e.g. tariff changes, supplier switches)
+# - Compare baseline vs scenario cost exposure
+# """)
 
 # ------------------ Historical Tariff View ------------------
-st.subheader("📈 Historical Tariff Education")
-years = sorted(historical_df["Year"].unique())
-selected_year = st.slider("Select Year", min_value=years[0], max_value=years[-1], value=years[-1])
+# st.subheader("📈 Historical Tariff Education")
+# years = sorted(historical_df["Year"].unique())
+# selected_year = st.slider("Select Year", min_value=years[0], max_value=years[-1], value=years[-1])
 
 year_df = historical_df[historical_df["Year"] == selected_year]
 fig_heat = px.density_heatmap(
