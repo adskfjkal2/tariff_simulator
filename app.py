@@ -51,9 +51,9 @@ st.title("📊 Tariff Impact & Supply Chain Simulator")
 # )
 # st.plotly_chart(fig_heat, use_container_width=True)
 
-# ------------------ Input & Baseline ------------------
-st.subheader("📦 Baseline Supply Chain Inputs")
-st.dataframe(df, use_container_width=True)
+# # ------------------ Input & Baseline ------------------
+# st.subheader("📦 Baseline Supply Chain Inputs")
+# st.dataframe(df, use_container_width=True)
 
 # ------------------ Scenario Builder ------------------
 st.sidebar.title("🧪 Scenario Builder")
@@ -94,7 +94,7 @@ if st.sidebar.button("Run Scenario Simulation"):
     df_scenario["Scenario CTS"] = full_cost * df_scenario["Total Inventory Position"]
 
     # ------------------ Scenario Comparison Table ------------------
-    st.subheader("🔁 Scenario Comparison vs Baseline")
+    # st.subheader("🔁 Scenario Comparison vs Baseline")
     compare_df = df_scenario[["Part Number", "Description", "Source Country"]].copy()
     compare_df["New Tariff Rate"] = df_scenario["Tariff Rate (%)"]
     compare_df["New CTS"] = df_scenario["Scenario CTS"]
@@ -102,13 +102,13 @@ if st.sidebar.button("Run Scenario Simulation"):
     compare_df["Delta ($)"] = compare_df["New CTS"] - compare_df["Total Cost to Serve"]
     compare_df["Delta (%)"] = (compare_df["Delta ($)"] / compare_df["Total Cost to Serve"]) * 100
 
-    st.dataframe(compare_df, use_container_width=True)
+    # st.dataframe(compare_df, use_container_width=True)
 
     # ------------------ Bar Chart of Δ ------------------
     fig_bar = px.bar(compare_df.sort_values("Delta ($)", ascending=False),
                      x="Part Number", y="Delta ($)", color="Source Country",
                      title="Parts with Highest Cost Impact")
-    st.plotly_chart(fig_bar, use_container_width=True)
+    # st.plotly_chart(fig_bar, use_container_width=True)
 
     # # ------------------ Combined Bubble Chart: Baseline + Scenario ------------------
     # st.subheader("📍 Cost Impact Bubble Chart: Baseline + Scenario")
@@ -204,7 +204,7 @@ if st.sidebar.button("Run Scenario Simulation"):
 
 
 # ------------------ Combined Animated Bubble Chart ------------------
-st.subheader("📍 Cost Impact Bubble Chart: Baseline + Scenario")
+# st.subheader("📍 Cost Impact Bubble Chart: Baseline + Scenario")
 
 # Compute deltas and scenario stats if simulation was run
 bubble_df = df_scenario.copy()
@@ -309,9 +309,11 @@ fig_both.update_layout(
     transition={"duration": 500}  # subtle animation
 )
 
-st.plotly_chart(fig_both, use_container_width=True)
+# st.plotly_chart(fig_both, use_container_width=True)
 
 if not scenario_triggered:
     st.caption("👀 Run a scenario to compare with baseline.")
 else:
     st.caption("🔵 Bubbles = Baseline & Scenario. Dotted line = Avg Δ by country.")
+
+
