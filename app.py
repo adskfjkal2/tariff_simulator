@@ -312,7 +312,7 @@ fig_both.update_layout(
     transition={"duration": 500}  # subtle animation
 )
 
-# st.plotly_chart(fig_both, use_container_width=True)
+st.plotly_chart(fig_both, use_container_width=True)
 
 if not scenario_triggered:
     st.caption("👀 Run a scenario to compare with baseline.")
@@ -356,8 +356,8 @@ scenario_triggered = (
 )
 
 
-st.subheader("📍 Bubble Chart: Baseline + Scenario")
-st.plotly_chart(fig_both, use_container_width=True)
+# st.subheader("📍 Bubble Chart: Baseline + Scenario")
+# st.plotly_chart(fig_both, use_container_width=True)
 
 # Create the 2x2 grid containers
 top_row = st.container()
