@@ -361,7 +361,7 @@ bottom_row = st.container()
 
 # ---------------- TOP ROW ----------------
 with top_row:
-    col1, col2 = st.columns(2)
+    col1, col2 = st.columns(1)
 
     with col1:
         st.subheader("📦 Baseline Supply Chain Inputs")
