@@ -49,7 +49,7 @@ fig_heat = px.density_heatmap(
     color_continuous_scale="Reds",
     title=f"Tariff Heatmap by Country & Material in {selected_year}"
 )
-st.plotly_chart(fig_heat, use_container_width=True)
+# st.plotly_chart(fig_heat, use_container_width=True)
 
 # ------------------ Input & Baseline ------------------
 st.subheader("📦 Baseline Supply Chain Inputs")
