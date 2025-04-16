@@ -214,7 +214,7 @@ bubble_df["Part Number"] = df["Part Number"]
 
 # Determine whether a real scenario has been run
 scenario_triggered = (
-    "Scenario CTS" in df_scenario.columns
+    "Scenario CTS" in bubble_df.columns
     and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
 )
 # Set bubble sizes
