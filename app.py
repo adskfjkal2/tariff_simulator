@@ -80,6 +80,39 @@ scenario_triggered = (
     and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
 )
 
+# ------------------ Scenario Simulation ------------------
+if st.sidebar.button("Run Scenario Simulation"):
+    # Copy baseline and apply updated tariffs
+    df_scenario = df.copy()
+    for country in countries:
+        df_scenario.loc[df_scenario["Source Country"] == country, "Tariff Rate (%)"] = scenario_tariffs[country]
+
+    # Recompute Scenario Total Cost to Serve (CTS)
+    base_cost = (
+        df_scenario["Cost Per Unit (USD)"] +
+        df_scenario["Packaging Cost Per Unit (USD)"] +
+        df_scenario["Freight Cost Per Unit (USD)"]
+    ) * (1 + df_scenario["Tariff Rate (%)"] / 100)
+
+    full_cost = base_cost + df_scenario["Warehouse Cost Per Unit (USD)"] + df_scenario["Indirect Cost Per Unit (USD)"]
+    df_scenario["Scenario CTS"] = full_cost * df_scenario["Total Inventory Position"]
+
+    # ------------------ Scenario Comparison Table ------------------
+    st.subheader("🔁 Scenario Comparison vs Baseline")
+    compare_df = df_scenario[["Part Number", "Description", "Source Country"]].copy()
+    compare_df["New Tariff Rate"] = df_scenario["Tariff Rate (%)"]
+    compare_df["New CTS"] = df_scenario["Scenario CTS"]
+    compare_df["Total Cost to Serve"] = df["Total Cost to Serve"]
+    compare_df["Delta ($)"] = compare_df["New CTS"] - compare_df["Total Cost to Serve"]
+    compare_df["Delta (%)"] = (compare_df["Delta ($)"] / compare_df["Total Cost to Serve"]) * 100
+
+    st.dataframe(compare_df, use_container_width=True)
+
+    # ------------------ Bar Chart of Δ ------------------
+    fig_bar = px.bar(compare_df.sort_values("Delta ($)", ascending=False),
+                     x="Part Number", y="Delta ($)", color="Source Country",
+                     title="Parts with Highest Cost Impact")
+    st.plotly_chart(fig_bar, use_container_width=True)
 
 
 # ------------------ Combined Animated Bubble Chart ------------------
@@ -189,39 +222,3 @@ if not scenario_triggered:
     st.caption("👀 Run a scenario to compare with baseline.")
 else:
     st.caption("🔵 Bubbles = Baseline & Scenario. Dotted line = Avg Δ by country.")
-
-
-# ------------------ Scenario Simulation ------------------
-if st.sidebar.button("Run Scenario Simulation"):
-    # Copy baseline and apply updated tariffs
-    df_scenario = df.copy()
-    for country in countries:
-        df_scenario.loc[df_scenario["Source Country"] == country, "Tariff Rate (%)"] = scenario_tariffs[country]
-
-    # Recompute Scenario Total Cost to Serve (CTS)
-    base_cost = (
-        df_scenario["Cost Per Unit (USD)"] +
-        df_scenario["Packaging Cost Per Unit (USD)"] +
-        df_scenario["Freight Cost Per Unit (USD)"]
-    ) * (1 + df_scenario["Tariff Rate (%)"] / 100)
-
-    full_cost = base_cost + df_scenario["Warehouse Cost Per Unit (USD)"] + df_scenario["Indirect Cost Per Unit (USD)"]
-    df_scenario["Scenario CTS"] = full_cost * df_scenario["Total Inventory Position"]
-
-    # ------------------ Scenario Comparison Table ------------------
-    st.subheader("🔁 Scenario Comparison vs Baseline")
-    compare_df = df_scenario[["Part Number", "Description", "Source Country"]].copy()
-    compare_df["New Tariff Rate"] = df_scenario["Tariff Rate (%)"]
-    compare_df["New CTS"] = df_scenario["Scenario CTS"]
-    compare_df["Total Cost to Serve"] = df["Total Cost to Serve"]
-    compare_df["Delta ($)"] = compare_df["New CTS"] - compare_df["Total Cost to Serve"]
-    compare_df["Delta (%)"] = (compare_df["Delta ($)"] / compare_df["Total Cost to Serve"]) * 100
-
-    st.dataframe(compare_df, use_container_width=True)
-
-    # ------------------ Bar Chart of Δ ------------------
-    fig_bar = px.bar(compare_df.sort_values("Delta ($)", ascending=False),
-                     x="Part Number", y="Delta ($)", color="Source Country",
-                     title="Parts with Highest Cost Impact")
-    st.plotly_chart(fig_bar, use_container_width=True)
-
