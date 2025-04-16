@@ -124,7 +124,7 @@ if st.sidebar.button("Run Scenario Simulation"):
     baseline_df["Part Number"] = df["Part Number"]
 
     # Check if scenario has been run
-    scenario_triggered = False
+    # scenario_triggered = False
     if "Scenario CTS" in df_scenario.columns:
         scenario_triggered = not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
         df_scenario["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
