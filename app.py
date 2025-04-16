@@ -309,7 +309,7 @@ fig_both.update_layout(
     yaxis_title="Part Number",
     height=500,
     showlegend=True,
-    transition={"duration": 500}  # subtle animation
+    transition={"duration": 1000}  # subtle animation
 )
 
 st.plotly_chart(fig_both, use_container_width=True)
