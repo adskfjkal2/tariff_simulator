@@ -59,6 +59,29 @@ scenario_tariffs = {}
 for country in countries:
     scenario_tariffs[country] = st.sidebar.slider(f"{country} Tariff %", 0, 100, int(df[df["Source Country"] == country]["Tariff Rate (%)"].mean()))
 
+
+# always on screen bubble
+st.subheader("📍 Scenario Delta Plot: Baseline vs Simulation")
+
+baseline_only_df = df.copy()
+baseline_only_df["Delta ($)"] = 0
+baseline_only_df["Bubble Size"] = df["Total Inventory Position"]
+baseline_only_df["Source Country"] = df["Source Country"]
+baseline_only_df["Part Number"] = df["Part Number"]
+
+fig_zero = px.scatter(
+    baseline_only_df,
+    x="Delta ($)",
+    y="Part Number",
+    size="Bubble Size",
+    color="Source Country",
+    title="💥 Baseline: All Parts at Zero Delta (No Scenario Yet)",
+    height=600
+)
+fig_zero.update_layout(xaxis_title="Δ Cost vs Baseline ($)", yaxis_title="Part Number", showlegend=True)
+fig_zero.update_traces(marker=dict(opacity=0.7, line=dict(width=1, color='DarkSlateGrey')))
+st.plotly_chart(fig_zero, use_container_width=True)
+
 if st.sidebar.button("Run Scenario Simulation"):
     df_scenario = df.copy()
     for country in countries:
@@ -87,40 +110,39 @@ if st.sidebar.button("Run Scenario Simulation"):
                      title="Parts with Highest Cost Impact")
     st.plotly_chart(fig_bar, use_container_width=True)
 
-### Bubble chart for delta
-st.subheader("📍 Scenario Delta Plot: Baseline vs Simulation")
 
-bubble_df = compare_df.copy()
-bubble_df["Bubble Size"] = df_scenario["Total Inventory Position"]
-bubble_df["Delta ($)"] = bubble_df["Delta ($)"].round(2)
+    # ------------------ Delta Bubble Chart After Simulation ------------------
+    st.subheader("📍 Scenario Delta Plot: Updated After Simulation")
 
-# Plot scenario delta
-fig_bubble = go.Figure()
+    bubble_df = df_scenario.copy()
+    bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
+    bubble_df["Bubble Size"] = df_scenario["Total Inventory Position"]
+    bubble_df["Part Number"] = df["Part Number"]  # to preserve order
 
-# Add baseline line (Delta = 0)
-fig_bubble.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
+    fig_bubble = go.Figure()
+    fig_bubble.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
 
-# Add each country group
-for country in bubble_df["Source Country"].unique():
-    group = bubble_df[bubble_df["Source Country"] == country]
-    fig_bubble.add_trace(go.Scatter(
-        x=group["Delta ($)"],
-        y=group["Part Number"],
-        mode="markers",
-        name=country,
-        marker=dict(
-            size=group["Bubble Size"] / 100,  # scale size for readability
-            opacity=0.7,
-            line=dict(width=1, color="black")
-        ),
-        hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
-    ))
+    for country in bubble_df["Source Country"].unique():
+        group = bubble_df[bubble_df["Source Country"] == country]
+        fig_bubble.add_trace(go.Scatter(
+            x=group["Delta ($)"],
+            y=group["Part Number"],
+            mode="markers",
+            name=country,
+            marker=dict(
+                size=group["Bubble Size"] / 100,
+                opacity=0.7,
+                line=dict(width=1, color="black")
+            ),
+            hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
+        ))
 
-fig_bubble.update_layout(
-    title="💥 Scenario Simulation: Cost Change from Baseline",
-    xaxis_title="Δ Cost-to-Serve ($)",
-    yaxis_title="Part Number",
-    height=600,
-    showlegend=True
-)
-st.plotly_chart(fig_bubble, use_container_width=True)
+    fig_bubble.update_layout(
+        title="💥 Simulation Impact: Cost Change from Baseline",
+        xaxis_title="Δ Cost-to-Serve ($)",
+        yaxis_title="Part Number",
+        height=600,
+        showlegend=True
+    )
+
+    st.plotly_chart(fig_bubble, use_container_width=True)
