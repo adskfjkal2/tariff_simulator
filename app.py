@@ -355,6 +355,10 @@ scenario_triggered = (
     and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
 )
 
+
+st.subheader("📍 Bubble Chart: Baseline + Scenario")
+st.plotly_chart(fig_both, use_container_width=True)
+
 # Create the 2x2 grid containers
 top_row = st.container()
 bottom_row = st.container()
@@ -364,13 +368,14 @@ with top_row:
     col1, col2 = st.columns(2)
 
     with col1:
-        st.subheader("📍 Bubble Chart: Baseline + Scenario")
-        st.plotly_chart(fig_both, use_container_width=True)
-
-    with col2:
-        
         st.subheader("📦 Baseline Supply Chain Inputs")
         st.dataframe(df, use_container_width=True, height=400)
+
+    with col2:
+        if scenario_triggered and 'fig_bar' in locals():
+            st.dataframe(compare_df, use_container_width=True)
+        else:
+            st.info("Run a scenario to view Delta table.")
 
 # ---------------- BOTTOM ROW ----------------
 with bottom_row:
