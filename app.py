@@ -312,7 +312,7 @@ fig_both.update_layout(
     transition={"duration": 500}  # subtle animation
 )
 
-st.plotly_chart(fig_both, use_container_width=True, height=400)
+st.plotly_chart(fig_both, use_container_width=True, height=300)
 
 if not scenario_triggered:
     st.caption("👀 Run a scenario to compare with baseline.")
