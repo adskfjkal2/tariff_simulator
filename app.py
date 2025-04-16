@@ -78,6 +78,7 @@ fig_zero = px.scatter(
     title="💥 Baseline: All Parts at Zero Delta (No Scenario Yet)",
     height=600
 )
+
 fig_zero.update_layout(xaxis_title="Δ Cost vs Baseline ($)", yaxis_title="Part Number", showlegend=True)
 fig_zero.update_traces(marker=dict(opacity=0.7, line=dict(width=1, color='DarkSlateGrey')))
 st.plotly_chart(fig_zero, use_container_width=True)
@@ -130,7 +131,7 @@ if st.sidebar.button("Run Scenario Simulation"):
             mode="markers",
             name=country,
             marker=dict(
-                size=group["Bubble Size"] / 100,
+                size=group["Bubble Size"],
                 opacity=0.7,
                 line=dict(width=1, color="black")
             ),
