@@ -436,28 +436,3 @@ fig.subplots_adjust(top=0.92)
 
 # Display in Streamlit
 st.pyplot(fig)
-
-axs[0, 0].scatter(deltas, parts, s=inventory/10, alpha=0.5, c='skyblue', edgecolors='black')
-axs[0, 0].axvline(0, color='gray', linestyle='--')
-axs[0, 0].set_title("Δ Cost-to-Serve Bubble Chart")
-axs[0, 0].set_xlabel("Δ Cost ($)")
-axs[0, 0].set_ylabel("Part Number")
-
-# 🔥 Tariff Heatmap (Top-Right)
-sns.heatmap(tariff_pivot, cmap="Reds", ax=axs[0, 1])
-axs[0, 1].set_title("Tariff Rate Heatmap")
-
-# 🔁 Bar Chart (Bottom-Left)
-sorted_idx = np.argsort(deltas)[::-1]
-axs[1, 0].bar(parts[sorted_idx], deltas[sorted_idx], color='coral')
-axs[1, 0].set_title("Scenario Δ Cost by Part")
-axs[1, 0].set_xlabel("Part Number")
-axs[1, 0].set_ylabel("Δ Cost ($)")
-axs[1, 0].tick_params(axis='x', labelrotation=90)
-
-# 🧭 Placeholder (Bottom-Right)
-axs[1, 1].axis("off")
-axs[1, 1].text(0.5, 0.5, "Reserved for future output", ha="center", va="center", fontsize=12, alpha=0.6)
-
-# Show in Streamlit
-st.pyplot(fig)
