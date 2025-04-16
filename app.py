@@ -74,6 +74,12 @@ size_option = st.sidebar.selectbox("Choose what bubble size represents:", [
     "Δ Cost (%)"
 ])
 
+# Determine whether a real scenario has been run
+scenario_triggered = (
+    "Scenario CTS" in df_scenario.columns
+    and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
+)
+
 # ------------------ Scenario Simulation ------------------
 if st.sidebar.button("Run Scenario Simulation"):
     # Copy baseline and apply updated tariffs
