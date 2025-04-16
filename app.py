@@ -206,17 +206,19 @@ if st.sidebar.button("Run Scenario Simulation"):
 # ------------------ Combined Animated Bubble Chart ------------------
 # st.subheader("📍 Cost Impact Bubble Chart: Baseline + Scenario")
 
+
+# Determine whether a real scenario has been run
+scenario_triggered = (
+    "Scenario CTS" in bubble_df.columns
+    and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"]))
+
+
 # Compute deltas and scenario stats if simulation was run
 bubble_df = df_scenario.copy()
 bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
 bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
 bubble_df["Part Number"] = df["Part Number"]
 
-# Determine whether a real scenario has been run
-scenario_triggered = (
-    "Scenario CTS" in bubble_df.columns
-    and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"])
-)
 # Set bubble sizes
 if size_option == "Total Inventory":
     baseline_size = df["Total Inventory Position"]
@@ -236,6 +238,7 @@ country_list = sorted(df["Source Country"].unique())
 color_map = px.colors.qualitative.Set2
 country_colors = {country: color_map[i % len(color_map)] for i, country in enumerate(country_list)}
 
+# Build the chart 
 fig_both = go.Figure()
 fig_both.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
 
@@ -329,11 +332,9 @@ with col1:
 
 with col2:
     st.subheader("📍 Bubble Chart: Baseline + Scenario")
-    if scenario_triggered and 'fig_both' in locals():
-        st.plotly_chart(fig_both, use_container_width=True, height=400)
-    else:
-        st.info("Run a scenario to see the bubble chart.")
+    st.plotly_chart(fig_both, use_container_width=True, height=400)
 
+    
 with col3:
     st.subheader("🔁 Scenario Bar Chart")
     if scenario_triggered and 'fig_bar' in locals():
