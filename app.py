@@ -398,8 +398,12 @@ compare_df["Delta (%)"] = (compare_df["Delta ($)"] / df["Total Cost to Serve"]).
 compare_df["Inventory"] = df["Total Inventory Position"]
 
 # Create tariff heatmap pivot table
-tariff_pivot = historical_df.pivot(index="Material", columns="Country", values="Tariff Rate (%)")
-
+tariff_pivot = historical_df.pivot_table(
+    index="Material",
+    columns="Country",
+    values="Tariff Rate (%)",
+    aggfunc="mean"  # or "max" or "min" if needed
+)
 # Create dashboard figure
 fig, axs = plt.subplots(2, 2, figsize=(14, 10))
 fig.tight_layout(pad=4.0)
