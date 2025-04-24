@@ -212,12 +212,44 @@ scenario_triggered = (
     "Scenario CTS" in df_scenario.columns
     and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"]))
 
+# === New: Add toggle to group by Part or Commodity ===
+group_by_option = st.sidebar.radio("Group bubble chart by:", ["Part Number", "Commodity"])
+group_field = "Part Number" if group_by_option == "Part Number" else "Commodity"
+
+# Group data accordingly
+if group_field == "Commodity":
+    grouped_df = df_scenario.groupby("Commodity").agg({
+        "Scenario CTS": "sum",
+        "Total Cost to Serve": "sum",
+        "Total Inventory Position": "sum",
+        "Source Country": lambda x: x.mode().iloc[0] if not x.mode().empty else "Unknown"
+    }).reset_index()
+
+    grouped_df["Delta ($)"] = grouped_df["Scenario CTS"] - grouped_df["Total Cost to Serve"]
+    grouped_df["Delta (%)"] = (grouped_df["Delta ($)"] / grouped_df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+    bubble_df = grouped_df
+    bubble_df[group_field] = bubble_df["Commodity"]
+else:
+    # Keep default part-level granularity
+    bubble_df = df_scenario.copy()
+    bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
+    bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+    bubble_df[group_field] = df["Part Number"]
+
+
 
 # Compute deltas and scenario stats if simulation was run
 bubble_df = df_scenario.copy()
 bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
 bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
-bubble_df["Part Number"] = df["Part Number"]
+# bubble_df["Part Number"] = df["Part Number"]
+
+# Update axis and bubble grouping dynamically
+y_values = bubble_df[group_field]
+# In all go.Scatter calls, use:
+y=y_values
+# Also update y-axis label in layout:
+yaxis_title=group_field
 
 # Set bubble sizes
 if size_option == "Total Inventory":
