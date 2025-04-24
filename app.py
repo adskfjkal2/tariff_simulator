@@ -373,6 +373,7 @@ with top_row:
 
     with col2:
         if scenario_triggered and 'fig_bar' in locals():
+            st.subheader("📦 Baseline Supply Chain Inputs")
             st.dataframe(compare_df, use_container_width=True)
         else:
             st.info("Run a scenario to view Delta table.")
