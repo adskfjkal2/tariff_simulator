@@ -17,6 +17,7 @@ df_scenario = df.copy()
 df_scenario["Scenario CTS"] = df["Total Cost to Serve"]  # Same as baseline initially
 
 
+
 # ------------------ Load Tariff Data ------------------
 tariff_data_path = "Tariff Rate by Year (1).csv"
 @st.cache_data
@@ -46,12 +47,30 @@ size_option = st.sidebar.selectbox("Choose what bubble size represents:", [
 ])
 
 # Sidebar: NEW grouping option
-group_by_option = st.sidebar.radio("Group data by:", ["Part Number", "Description", "Commodity"])
+st.sidebar.markdown("### Group Data By")
+group_by_option = st.sidebar.radio("View data grouped by:", ["Part Number", "Part Name", "Commodity"])
 group_field = {
     "Part Number": "Part Number",
-    "Description": "Description",
+    "Part Name": "Description",  # Renaming 'Description' to 'Part Name'
     "Commodity": "Commodity"
 }[group_by_option]
+
+
+# Always group data to build compare_df (used in bar chart, table, bubble chart)
+group_cols = [group_field, "Source Country"]
+
+compare_df = df_scenario.groupby(group_cols).agg({
+    "Scenario CTS": "sum",
+    "Total Cost to Serve": "sum",
+    "Total Inventory Position": "sum",
+    "Tariff Rate (%)": "mean"
+}).reset_index()
+
+compare_df["Delta ($)"] = compare_df["Scenario CTS"] - compare_df["Total Cost to Serve"]
+compare_df["Delta (%)"] = (compare_df["Delta ($)"] / compare_df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+
+# This powers bubble chart and bar chart
+bubble_df = compare_df.copy()
 
 # ------------------ Scenario Simulation ------------------
 if st.sidebar.button("Run Scenario Simulation"):
@@ -70,22 +89,34 @@ if st.sidebar.button("Run Scenario Simulation"):
     full_cost = base_cost + df_scenario["Warehouse Cost Per Unit (USD)"] + df_scenario["Indirect Cost Per Unit (USD)"]
     df_scenario["Scenario CTS"] = full_cost * df_scenario["Total Inventory Position"]
 
+    # Use selected group_field for grouping
+    group_cols = [group_field, "Source Country"]
+
     # ------------------ Scenario Comparison Table ------------------
-    # st.subheader("🔁 Scenario Comparison vs Baseline")
-    compare_df = df_scenario[["Part Number", "Description", "Source Country"]].copy()
-    compare_df["New Tariff Rate"] = df_scenario["Tariff Rate (%)"]
-    compare_df["New CTS"] = df_scenario["Scenario CTS"]
-    compare_df["Total Cost to Serve"] = df["Total Cost to Serve"]
-    compare_df["Delta ($)"] = compare_df["New CTS"] - compare_df["Total Cost to Serve"]
-    compare_df["Delta (%)"] = (compare_df["Delta ($)"] / compare_df["Total Cost to Serve"]) * 100
+    compare_df = df_scenario.groupby(group_cols).agg({
+        "Scenario CTS": "sum",
+        "Total Cost to Serve": "sum",
+        "Total Inventory Position": "sum"
+    }).reset_index()
+
+    compare_df["Delta ($)"] = compare_df["Scenario CTS"] - compare_df["Total Cost to Serve"]
+    compare_df["Delta (%)"] = (compare_df["Delta ($)"] / compare_df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+
+
+    # # st.subheader("🔁 Scenario Comparison vs Baseline")
+    # compare_df = df_scenario[["Part Number", "Description", "Source Country"]].copy()
+    # compare_df["New Tariff Rate"] = df_scenario["Tariff Rate (%)"]
+    # compare_df["New CTS"] = df_scenario["Scenario CTS"]
+    # compare_df["Total Cost to Serve"] = df["Total Cost to Serve"]
+    # compare_df["Delta ($)"] = compare_df["New CTS"] - compare_df["Total Cost to Serve"]
+    # compare_df["Delta (%)"] = (compare_df["Delta ($)"] / compare_df["Total Cost to Serve"]) * 100
 
     # st.dataframe(compare_df, use_container_width=True)
 
     # ------------------ Bar Chart of Δ ------------------
     fig_bar = px.bar(compare_df.sort_values("Delta ($)", ascending=False),
-                     x="Part Number", y="Delta ($)", color="Source Country",
-                     title="Parts with Highest Cost Impact")
-    
+                 x=group_field, y="Delta ($)", color="Source Country",
+                 title=f"{group_by_option}s with Highest Cost Impact")
 
 
 # ------------------ Combined Animated Bubble Chart ------------------
@@ -141,9 +172,13 @@ else:
 #     bubble_df[group_field] = df["Part Number"]
 
 # Compute deltas and scenario stats if simulation was run
-bubble_df = df_scenario.copy()
-bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
-bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+bubble_df = compare_df.copy()
+bubble_df["Group Label"] = bubble_df[group_field]
+
+# bubble_df = df_scenario.copy()
+# bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
+# bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+
 # bubble_df["Part Number"] = df["Part Number"]
 
 # Update axis and bubble grouping dynamically
