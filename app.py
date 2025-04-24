@@ -241,30 +241,6 @@ for country in country_list:
     ))
 
 
-for country in country_list:
-    base = df[df["Source Country"] == country].copy()
-    base["Delta ($)"] = 0
-    base["Bubble Size"] = baseline_size[base.index]
-    base["Part Number"] = df["Part Number"]
-
-    fig_both.add_trace(go.Scatter(
-        x=base["Delta ($)"],
-        y=base["Part Number"],
-        mode="markers+text",
-        name=f"{country} (Baseline)",
-        marker=dict(
-            size=base["Bubble Size"],
-            sizemode="area",
-            sizeref=sizeref,
-            sizemin=5,
-            opacity=0.4,
-            color=country_colors[country],
-            line=dict(width=1, color='black')
-        ),
-        text=None,
-        hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
-    ))
-
 # Plot scenario trace (animated into view)
 if scenario_triggered:
     for country in country_list:
