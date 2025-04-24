@@ -211,7 +211,36 @@ country_colors = {country: color_map[i % len(color_map)] for i, country in enume
 fig_both = go.Figure()
 fig_both.add_vline(x=0, line=dict(color="gray", dash="dash"), annotation_text="Baseline", annotation_position="top")
 
-# Plot baseline trace
+# Baseline grouped to match scenario grouping
+baseline_grouped = df.groupby(group_cols).agg({
+    "Total Cost to Serve": "sum",
+    "Total Inventory Position": "sum"
+}).reset_index()
+baseline_grouped["Delta ($)"] = 0
+baseline_grouped["Group Label"] = baseline_grouped[group_field]
+baseline_grouped["Bubble Size"] = baseline_grouped["Total Inventory Position"] if size_option == "Total Inventory" else 1
+
+# Plot baseline trace by group
+for country in country_list:
+    base = baseline_grouped[baseline_grouped["Source Country"] == country]
+    fig_both.add_trace(go.Scatter(
+        x=base["Delta ($)"],
+        y=base["Group Label"],
+        mode="markers",
+        name=f"{country} (Baseline)",
+        marker=dict(
+            size=base["Bubble Size"],
+            sizemode="area",
+            sizeref=sizeref,
+            sizemin=5,
+            opacity=0.4,
+            color=country_colors[country],
+            line=dict(width=1, color='black')
+        ),
+        hovertemplate="<b>%{y}</b><br>Δ: $%{x}<extra></extra>"
+    ))
+
+
 for country in country_list:
     base = df[df["Source Country"] == country].copy()
     base["Delta ($)"] = 0
