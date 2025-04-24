@@ -244,7 +244,7 @@ if scenario_triggered:
 
         fig_both.add_trace(go.Scatter(
             x=group["Delta ($)"],
-            y=group["Part Number"],
+            y=group["Group Label"],
             mode="markers",
             name=f"{country} (Scenario)",
             marker=dict(
