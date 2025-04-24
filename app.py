@@ -49,7 +49,7 @@ size_option = st.sidebar.selectbox("Choose what bubble size represents:", [
 group_by_option = st.sidebar.radio("Group data by:", ["Part Number", "Description", "Commodity"])
 group_field = {
     "Part Number": "Part Number",
-    "Part Name": "Description",
+    "Description": "Description",
     "Commodity": "Commodity"
 }[group_by_option]
 
