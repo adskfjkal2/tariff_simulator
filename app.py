@@ -189,7 +189,7 @@ y=y_values
 yaxis_title=group_field
 
 # Set bubble sizes
-if size_option == "Total Inventory":
+if size_option == "Total Inventory (units)":
     baseline_size = df["Total Inventory Position"]
     scenario_size = df["Total Inventory Position"] if scenario_triggered else None
 elif size_option == "Δ Cost ($)":
