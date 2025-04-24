@@ -17,7 +17,7 @@ df_scenario = df.copy()
 df_scenario["Scenario CTS"] = df["Total Cost to Serve"]  # Same as baseline initially
 
 
-# ------------------ Load Historical Tariff Data ------------------
+# ------------------ Load Tariff Data ------------------
 tariff_data_path = "Tariff Rate by Year (1).csv"
 @st.cache_data
 def load_tariff_data():
@@ -28,8 +28,7 @@ historical_df = load_tariff_data()
 # ------------------ Landing Section ------------------
 st.title("📊 Tariff Impact & Supply Chain Simulator")
 
-
-# ------------------ Scenario Builder ------------------
+# ------------------ Sidebar: Scenario Builder ------------------
 st.sidebar.title("🧪 Scenario Builder")
 st.sidebar.markdown("Adjust tariffs by source country")
 
@@ -40,15 +39,19 @@ scenario_tariffs = {
     for country in countries
 }
 
-# Sidebar: Bubble size selector
+# Sidebar: Bubble size and grouping selectors
 st.sidebar.markdown("### Bubble Size Metric")
 size_option = st.sidebar.selectbox("Choose what bubble size represents:", [
-    "Total Inventory",
-    "Δ Cost ($)",
-    "Δ Cost (%)"
+    "Total Inventory", "Δ Cost ($)", "Δ Cost (%)"
 ])
 
-
+# Sidebar: NEW grouping option
+group_by_option = st.sidebar.radio("Group data by:", ["Part Number", "Description", "Commodity"])
+group_field = {
+    "Part Number": "Part Number",
+    "Part Name": "Description",
+    "Commodity": "Commodity"
+}[group_by_option]
 
 # ------------------ Scenario Simulation ------------------
 if st.sidebar.button("Run Scenario Simulation"):
@@ -94,31 +97,48 @@ scenario_triggered = (
     "Scenario CTS" in df_scenario.columns
     and not df_scenario["Scenario CTS"].equals(df["Total Cost to Serve"]))
 
-# === New: Add toggle to group by Part or Commodity ===
-group_by_option = st.sidebar.radio("Group bubble chart by:", ["Part Number", "Commodity"])
-group_field = "Part Number" if group_by_option == "Part Number" else "Commodity"
-
-# Group data accordingly
-if group_field == "Commodity":
-    grouped_df = df_scenario.groupby("Commodity").agg({
+# ------------------ Grouping Logic ------------------
+if group_field != "Part Number":
+    grouped_df = df_scenario.groupby([group_field, "Source Country"]).agg({
         "Scenario CTS": "sum",
         "Total Cost to Serve": "sum",
-        "Total Inventory Position": "sum",
-        "Source Country": lambda x: x.mode().iloc[0] if not x.mode().empty else "Unknown"
+        "Total Inventory Position": "sum"
     }).reset_index()
 
     grouped_df["Delta ($)"] = grouped_df["Scenario CTS"] - grouped_df["Total Cost to Serve"]
     grouped_df["Delta (%)"] = (grouped_df["Delta ($)"] / grouped_df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
-    bubble_df = grouped_df
-    bubble_df[group_field] = bubble_df["Commodity"]
+
+    bubble_df = grouped_df.rename(columns={group_field: "Group Label"})
 else:
-    # Keep default part-level granularity
+    df_scenario["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
+    df_scenario["Delta (%)"] = (df_scenario["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
     bubble_df = df_scenario.copy()
-    bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
-    bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
-    bubble_df[group_field] = df["Part Number"]
+    bubble_df["Group Label"] = df_scenario["Part Number"]
 
 
+# # === New: Add toggle to group by Part or Commodity ===
+# group_by_option = st.sidebar.radio("Group bubble chart by:", ["Part Number", "Commodity"])
+# group_field = "Part Number" if group_by_option == "Part Number" else "Commodity"
+
+# # Group data accordingly
+# if group_field == "Commodity":
+#     grouped_df = df_scenario.groupby("Commodity").agg({
+#         "Scenario CTS": "sum",
+#         "Total Cost to Serve": "sum",
+#         "Total Inventory Position": "sum",
+#         "Source Country": lambda x: x.mode().iloc[0] if not x.mode().empty else "Unknown"
+#     }).reset_index()
+
+#     grouped_df["Delta ($)"] = grouped_df["Scenario CTS"] - grouped_df["Total Cost to Serve"]
+#     grouped_df["Delta (%)"] = (grouped_df["Delta ($)"] / grouped_df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+#     bubble_df = grouped_df
+#     bubble_df[group_field] = bubble_df["Commodity"]
+# else:
+#     # Keep default part-level granularity
+#     bubble_df = df_scenario.copy()
+#     bubble_df["Delta ($)"] = df_scenario["Scenario CTS"] - df["Total Cost to Serve"]
+#     bubble_df["Delta (%)"] = (bubble_df["Delta ($)"] / df["Total Cost to Serve"]).replace([np.inf, -np.inf], 0).fillna(0)
+#     bubble_df[group_field] = df["Part Number"]
 
 # Compute deltas and scenario stats if simulation was run
 bubble_df = df_scenario.copy()
