@@ -43,7 +43,7 @@ scenario_tariffs = {
 # Sidebar: Bubble size and grouping selectors
 st.sidebar.markdown("### Bubble Size Metric")
 size_option = st.sidebar.selectbox("Choose what bubble size represents:", [
-    "Total Inventory", "Δ Cost ($)", "Δ Cost (%)"
+    "Total Inventory (units)", "Δ Cost ($)", "Δ Cost (%)"
 ])
 
 # Sidebar: NEW grouping option
@@ -189,6 +189,7 @@ y=y_values
 yaxis_title=group_field
 
 # Set bubble sizes
+
 if size_option == "Total Inventory (units)":
     baseline_size = df["Total Inventory Position"]
     scenario_size = df["Total Inventory Position"] if scenario_triggered else None
@@ -218,7 +219,7 @@ baseline_grouped = df.groupby(group_cols).agg({
 }).reset_index()
 baseline_grouped["Delta ($)"] = 0
 baseline_grouped["Group Label"] = baseline_grouped[group_field]
-baseline_grouped["Bubble Size"] = baseline_grouped["Total Inventory Position"] if size_option == "Total Inventory" else 1
+baseline_grouped["Bubble Size"] = baseline_grouped["Total Inventory Position"] if size_option == "Total Inventory (units)" else 1
 
 # Plot baseline trace by group
 for country in country_list:
